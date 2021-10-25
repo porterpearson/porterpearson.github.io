@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.88.1" />
+
+
+<title>Cleaning Up Datasets: An Example - Porter Pearson&#39;s GitHub Site</title>
+<meta property="og:title" content="Cleaning Up Datasets: An Example - Porter Pearson&#39;s GitHub Site">
+
+
+  <link href='http://porterpearson.github.io/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/GitHub.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/IMG_0488.JPG"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://github.com/porterpearson">GitHub</a></li>
+    
+    <li><a href="https://instagram.com/porter.pearson">Instagram</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">7 min read</span>
+    
+
+    <h1 class="article-title">Cleaning Up Datasets: An Example</h1>
+
+    
+    <span class="article-date">2021-10-25</span>
+    
+
+    <div class="article-content">
+      
+<script src="http://porterpearson.github.io/2021/10/25/cleaning-up-datasets-an-example/index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Sometimes data isn’t packaged the way we need it to be. Let’s walk through an example on how to fix that.</p>
+<p>First, I’ll load up my libraries.</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.1 --</code></pre>
+<pre><code>## v ggplot2 3.3.5     v purrr   0.3.4
+## v tibble  3.1.3     v dplyr   1.0.7
+## v tidyr   1.1.3     v stringr 1.4.0
+## v readr   2.0.1     v forcats 0.5.1</code></pre>
+<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(ggalt)</code></pre>
+<pre><code>## Registered S3 methods overwritten by &#39;ggalt&#39;:
+##   method                  from   
+##   grid.draw.absoluteGrob  ggplot2
+##   grobHeight.absoluteGrob ggplot2
+##   grobWidth.absoluteGrob  ggplot2
+##   grobX.absoluteGrob      ggplot2
+##   grobY.absoluteGrob      ggplot2</code></pre>
+<p>And my dataset.</p>
+<pre class="r"><code>badlogs &lt;- read_csv(&quot;http://mattwaite.github.io/sportsdatafiles/badfootballlogs19.csv&quot;)</code></pre>
+<pre><code>## Rows: 1662 Columns: 51</code></pre>
+<pre><code>## -- Column specification --------------------------------------------------------
+## Delimiter: &quot;,&quot;
+## chr  (8): Date, HomeAway, Opponent, Result, TeamFull, TeamURL, Team, Conference
+## dbl (43): Game, PassingCmp, PassingAtt, PassingPct, PassingYds, PassingTD, R...</code></pre>
+<pre><code>## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<p>First thing’s first, let’s take a look at what we’re working with.</p>
+<pre class="r"><code>head(badlogs)</code></pre>
+<pre><code>## # A tibble: 6 x 51
+##    Game Date    HomeAway Opponent         Result    PassingCmp PassingAtt PassingPct
+##   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;            &lt;chr&gt;          &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+## 1     1 8/24/19 N        Miami (FL)       W (24-20)         17         27       63  
+## 2     2 9/7/19  &lt;NA&gt;     Tennessee-Martin W (45-0)          30         36       83.3
+## 3     3 9/14/19 @        Kentucky         W (29-21)         21         30       70  
+## 4     4 9/21/19 &lt;NA&gt;     Tennessee        W (34-3)          24         34       70.6
+## 5     5 9/28/19 &lt;NA&gt;     Towson           W (38-0)          24         28       85.7
+## 6     6 10/5/19 &lt;NA&gt;     Auburn           W (24-13)         25         39       64.1
+## # ... with 43 more variables: PassingYds &lt;dbl&gt;, PassingTD &lt;dbl&gt;,
+## #   RushingAtt &lt;dbl&gt;, RushingYds &lt;dbl&gt;, RushingAvg &lt;dbl&gt;, RushingTD &lt;dbl&gt;,
+## #   OffensivePlays &lt;dbl&gt;, OffensiveYards &lt;dbl&gt;, OffenseAvg &lt;dbl&gt;,
+## #   FirstDownPass &lt;dbl&gt;, FirstDownRush &lt;dbl&gt;, FirstDownPen &lt;dbl&gt;,
+## #   FirstDownTotal &lt;dbl&gt;, Penalties &lt;dbl&gt;, PenaltyYds &lt;dbl&gt;, Fumbles &lt;dbl&gt;,
+## #   Interceptions &lt;dbl&gt;, TotalTurnovers &lt;dbl&gt;, TeamFull &lt;chr&gt;, TeamURL &lt;chr&gt;,
+## #   DefPassingCmp &lt;dbl&gt;, DefPassingAtt &lt;dbl&gt;, DefPassingPct &lt;dbl&gt;, ...</code></pre>
+<p>Our Result column is problematic. Let’s turn that W (24-20) into something that we can use.</p>
+<p>First, let’s separate the outcome from the score of the game using the separate function.</p>
+<pre class="r"><code>badlogs %&gt;% separate(Result, into=c(&quot;Outcome&quot;, &quot;Score&quot;), sep=&quot;\\ &quot;)</code></pre>
+<pre><code>## # A tibble: 1,662 x 52
+##     Game Date     HomeAway Opponent Outcome Score PassingCmp PassingAtt PassingPct
+##    &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+##  1     1 8/24/19  N        Miami (~ W       (24-~         17         27       63  
+##  2     2 9/7/19   &lt;NA&gt;     Tenness~ W       (45-~         30         36       83.3
+##  3     3 9/14/19  @        Kentucky W       (29-~         21         30       70  
+##  4     4 9/21/19  &lt;NA&gt;     Tenness~ W       (34-~         24         34       70.6
+##  5     5 9/28/19  &lt;NA&gt;     Towson   W       (38-~         24         28       85.7
+##  6     6 10/5/19  &lt;NA&gt;     Auburn   W       (24-~         25         39       64.1
+##  7     7 10/12/19 @        Louisia~ L       (28-~         24         44       54.5
+##  8     8 10/19/19 @        South C~ W       (38-~         21         33       63.6
+##  9     9 11/2/19  N        Georgia  L       (17-~         21         33       63.6
+## 10    10 11/9/19  &lt;NA&gt;     Vanderb~ W       (56-~         27         40       67.5
+## # ... with 1,652 more rows, and 43 more variables: PassingYds &lt;dbl&gt;,
+## #   PassingTD &lt;dbl&gt;, RushingAtt &lt;dbl&gt;, RushingYds &lt;dbl&gt;, RushingAvg &lt;dbl&gt;,
+## #   RushingTD &lt;dbl&gt;, OffensivePlays &lt;dbl&gt;, OffensiveYards &lt;dbl&gt;,
+## #   OffenseAvg &lt;dbl&gt;, FirstDownPass &lt;dbl&gt;, FirstDownRush &lt;dbl&gt;,
+## #   FirstDownPen &lt;dbl&gt;, FirstDownTotal &lt;dbl&gt;, Penalties &lt;dbl&gt;,
+## #   PenaltyYds &lt;dbl&gt;, Fumbles &lt;dbl&gt;, Interceptions &lt;dbl&gt;, TotalTurnovers &lt;dbl&gt;,
+## #   TeamFull &lt;chr&gt;, TeamURL &lt;chr&gt;, DefPassingCmp &lt;dbl&gt;, ...</code></pre>
+<p>We now have a functional Outcome column, but our Score column still needs some work.</p>
+<p>Chaining a pair of mutates onto our previous work allows us to drop the parentheses.</p>
+<pre class="r"><code>badlogs %&gt;% 
+  separate(Result, into=c(&quot;Outcome&quot;, &quot;Score&quot;), sep=&quot;\\ &quot;) %&gt;% 
+  mutate(Score=gsub(&quot;\\(&quot;, &quot;&quot;, Score)) %&gt;%
+  mutate(Score=gsub(&quot;)&quot;, &quot;&quot;, Score))</code></pre>
+<pre><code>## # A tibble: 1,662 x 52
+##     Game Date     HomeAway Opponent Outcome Score PassingCmp PassingAtt PassingPct
+##    &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+##  1     1 8/24/19  N        Miami (~ W       24-20         17         27       63  
+##  2     2 9/7/19   &lt;NA&gt;     Tenness~ W       45-0          30         36       83.3
+##  3     3 9/14/19  @        Kentucky W       29-21         21         30       70  
+##  4     4 9/21/19  &lt;NA&gt;     Tenness~ W       34-3          24         34       70.6
+##  5     5 9/28/19  &lt;NA&gt;     Towson   W       38-0          24         28       85.7
+##  6     6 10/5/19  &lt;NA&gt;     Auburn   W       24-13         25         39       64.1
+##  7     7 10/12/19 @        Louisia~ L       28-42         24         44       54.5
+##  8     8 10/19/19 @        South C~ W       38-27         21         33       63.6
+##  9     9 11/2/19  N        Georgia  L       17-24         21         33       63.6
+## 10    10 11/9/19  &lt;NA&gt;     Vanderb~ W       56-0          27         40       67.5
+## # ... with 1,652 more rows, and 43 more variables: PassingYds &lt;dbl&gt;,
+## #   PassingTD &lt;dbl&gt;, RushingAtt &lt;dbl&gt;, RushingYds &lt;dbl&gt;, RushingAvg &lt;dbl&gt;,
+## #   RushingTD &lt;dbl&gt;, OffensivePlays &lt;dbl&gt;, OffensiveYards &lt;dbl&gt;,
+## #   OffenseAvg &lt;dbl&gt;, FirstDownPass &lt;dbl&gt;, FirstDownRush &lt;dbl&gt;,
+## #   FirstDownPen &lt;dbl&gt;, FirstDownTotal &lt;dbl&gt;, Penalties &lt;dbl&gt;,
+## #   PenaltyYds &lt;dbl&gt;, Fumbles &lt;dbl&gt;, Interceptions &lt;dbl&gt;, TotalTurnovers &lt;dbl&gt;,
+## #   TeamFull &lt;chr&gt;, TeamURL &lt;chr&gt;, DefPassingCmp &lt;dbl&gt;, ...</code></pre>
+<p>Almost there.</p>
+<p>Let’s separate the Score column into TeamScore and OpponentScore columns - again, chaining onto our previous work.</p>
+<p>Since the values in these columns came with a hyphen between them, we’ll also need to use as.numeric to convert them into numeric data.</p>
+<p>Let’s save it to a new dataframe.</p>
+<pre class="r"><code>goodlogs &lt;- badlogs %&gt;% 
+  separate(Result, into=c(&quot;Outcome&quot;, &quot;Score&quot;), sep=&quot;\\ &quot;) %&gt;% 
+  mutate(Score=gsub(&quot;\\(&quot;, &quot;&quot;, Score)) %&gt;%
+  mutate(Score=gsub(&quot;)&quot;, &quot;&quot;, Score)) %&gt;%
+  separate(Score, into=c(&quot;TeamScore&quot;, &quot;OpponentScore&quot;), sep=&quot;-&quot;) %&gt;%
+  mutate(TeamScore = as.numeric(TeamScore), OpponentScore = as.numeric(OpponentScore))</code></pre>
+<p>There we go. Our data is clean. Now, let’s do something with it. Our final goal: use a scatterplot to highlight the biggest blowouts of the 2019 college football season.</p>
+<p>First, let’s mutate a differential field by subtracting OpponentScore from TeamScore.</p>
+<p>To make things a little easier on ourselves, let’s save this to a new dataframe.</p>
+<pre class="r"><code>goodlogswithdifferential &lt;- goodlogs %&gt;%
+  mutate(Differential = TeamScore - OpponentScore)</code></pre>
+<p>Now, let’s find the worst games. We’ll use filter to find the games that featured a point differential of more than 65 points.</p>
+<p>Again, let’s save it to a new dataframe. Just out of curiosity, let’s see who made the list.</p>
+<pre class="r"><code>worstgames &lt;- goodlogswithdifferential %&gt;% filter(Differential&gt;65)
+worstgames</code></pre>
+<pre><code>## # A tibble: 5 x 54
+##    Game Date    HomeAway Opponent       Outcome TeamScore OpponentScore PassingCmp
+##   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;       &lt;dbl&gt;         &lt;dbl&gt;      &lt;dbl&gt;
+## 1     4 9/21/19 &lt;NA&gt;     Miami (OH)     W              76             5         22
+## 2     1 8/31/19 &lt;NA&gt;     Idaho          W              79             7         25
+## 3     1 8/31/19 &lt;NA&gt;     Howard         W              79             0         17
+## 4     2 9/7/19  &lt;NA&gt;     Nevada         W              77             6         27
+## 5     3 9/14/19 &lt;NA&gt;     Texas Southern W              77             6         22
+## # ... with 46 more variables: PassingAtt &lt;dbl&gt;, PassingPct &lt;dbl&gt;,
+## #   PassingYds &lt;dbl&gt;, PassingTD &lt;dbl&gt;, RushingAtt &lt;dbl&gt;, RushingYds &lt;dbl&gt;,
+## #   RushingAvg &lt;dbl&gt;, RushingTD &lt;dbl&gt;, OffensivePlays &lt;dbl&gt;,
+## #   OffensiveYards &lt;dbl&gt;, OffenseAvg &lt;dbl&gt;, FirstDownPass &lt;dbl&gt;,
+## #   FirstDownRush &lt;dbl&gt;, FirstDownPen &lt;dbl&gt;, FirstDownTotal &lt;dbl&gt;,
+## #   Penalties &lt;dbl&gt;, PenaltyYds &lt;dbl&gt;, Fumbles &lt;dbl&gt;, Interceptions &lt;dbl&gt;,
+## #   TotalTurnovers &lt;dbl&gt;, TeamFull &lt;chr&gt;, TeamURL &lt;chr&gt;, ...</code></pre>
+<p>Ohio State ran it up on Miami (OH)? Never would have guessed.</p>
+<p>Time to chart it.</p>
+<p>We can use geom_point to create our scatterplots. First, we’ll use our goodlogswithdifferential dataframe to chart all games. Let’s make those grey. Next, we’ll use our worstgames dataframe to chart the worst games. Let’s make those red.</p>
+<pre class="r"><code>ggplot() +
+  geom_point(data=goodlogswithdifferential, aes(x=TeamScore, y=OpponentScore), color=&quot;grey&quot;) +
+  geom_point(data=worstgames, aes(x=TeamScore, y=OpponentScore), color=&quot;red&quot;)</code></pre>
+<p><img src="http://porterpearson.github.io/2021/10/25/cleaning-up-datasets-an-example/index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Let’s circle it as well - geom_encircle does the trick.</p>
+<pre class="r"><code>ggplot() +
+  geom_point(data=goodlogswithdifferential, aes(x=TeamScore, y=OpponentScore), color=&quot;grey&quot;) +
+  geom_point(data=worstgames, aes(x=TeamScore, y=OpponentScore), color=&quot;red&quot;) +
+  geom_encircle(data=worstgames, aes(x=TeamScore, y=OpponentScore), s_shape=.5, expand=.03, color=&quot;red&quot;)</code></pre>
+<p><img src="http://porterpearson.github.io/2021/10/25/cleaning-up-datasets-an-example/index_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>All that’s left is the finishing touches.</p>
+<p>First, let’s add some labels. We’ll add a title, subtitle, caption and axis labels.</p>
+<p>Next, we’ll apply the minimal theme.</p>
+<p>Finally, we’ll adjust font sizes, bold our title and strip the grid.</p>
+<pre class="r"><code>ggplot() +
+  geom_point(data=goodlogswithdifferential, aes(x=TeamScore, y=OpponentScore), color=&quot;grey&quot;) +
+  geom_point(data=worstgames, aes(x=TeamScore, y=OpponentScore), color=&quot;red&quot;) +
+  geom_encircle(data=worstgames, aes(x=TeamScore, y=OpponentScore), s_shape=.5, expand=.03, color=&quot;red&quot;) + 
+  labs(title=&quot;The biggest blowouts of the 2019 college football season&quot;, subtitle=&quot;Winning the game is one thing. Winning it by more than 65 points is another.&quot;, caption=&quot;Source: Sports-Reference.com | By: Porter Pearson&quot;, x=&quot;Team Score&quot;, y=&quot;Opponent Score&quot;) +  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = &quot;bold&quot;),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    )</code></pre>
+<p><img src="http://porterpearson.github.io/2021/10/25/cleaning-up-datasets-an-example/index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>And there we have it: the biggest blowouts of the 2019 college football season.</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+
