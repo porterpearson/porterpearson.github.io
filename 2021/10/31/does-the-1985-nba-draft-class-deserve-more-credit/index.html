@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.88.1" />
+
+
+<title>Does the 1985 NBA draft class deserve more credit? - Porter Pearson&#39;s GitHub Site</title>
+<meta property="og:title" content="Does the 1985 NBA draft class deserve more credit? - Porter Pearson&#39;s GitHub Site">
+
+
+  <link href='http://porterpearson.github.io/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/GitHub.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/IMG_0488.JPG"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://github.com/porterpearson">GitHub</a></li>
+    
+    <li><a href="https://instagram.com/porter.pearson">Instagram</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">14 min read</span>
+    
+
+    <h1 class="article-title">Does the 1985 NBA draft class deserve more credit?</h1>
+
+    
+    <span class="article-date">2021-10-31</span>
+    
+
+    <div class="article-content">
+      
+<script src="http://porterpearson.github.io/2021/10/31/does-the-1985-nba-draft-class-deserve-more-credit/index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Every year when the NBA draft rolls around, the question arises: what is the greatest NBA draft class of all time?</p>
+<p>Ask just about anyone who follows the NBA and they’ll give you one of three answers: 1984, 1996 or 2003. And with good reason. The numbers speak for themselves:</p>
+<p>With four Hall of Fame Inductees, 12 combined championships and seven All-Stars, the ’84 draft features all-time greats such as Michael Jordan, Hakeem Olajuwon, Charles Barkley and John Stockton.</p>
+<p>With another four Hall of Fame Inductees, 19 combined championships and 10 All-Stars, the ’96 class includes the likes of Kobe Bryant, Allen Iverson, Steve Nash and Ray Allen.</p>
+<p>Finally, with one Hall of Fame Inductee (and three more on the way), 26 combined championships and nine All-Stars, the ’03 crew is lead by LeBron James, Dwyane Wade, Carmelo Anthony and Chris Bosh.</p>
+<p>Tough to argue against any of those.</p>
+<p>So, is that it? End of discussion? Or can another class challenge the consensus top three as the best draft class in history?</p>
+<p>Upon taking a closer look, one year stands out from the rest. With four Hall of Fame Inductees, 10 All-Stars and 16 combined championships, the 1985 draft class comes as close as anyone to challenging the top three classes. Yet, the ’85 class is rarely ever mentioned in the same breath as the ’84, ’96 and ’03 drafts.</p>
+<p>So, does the 1985 draft deserve more credit?</p>
+<p>Let’s load up some data and take a look. I’ll be using NBA Draft data that includes where players were drafted and their career stats.</p>
+<pre class="r"><code>library(tidyverse)
+library(cowplot)
+library(ggrepel)
+library(scales)
+library(gt)
+
+alltime &lt;- read_csv(&quot;/Users/Porter/OneDrive/UNL Academics/SPMC350/Homework/NBA Drafts/nbadraftalltime.csv&quot;)</code></pre>
+<p>Let’s jump into it.</p>
+<p>So, first thing’s first, let’s take a look at class numbers as a whole.</p>
+<pre class="r"><code>byclass &lt;- alltime %&gt;% group_by(Year) %&gt;% filter(MP&gt;0) %&gt;% summarise(classG = sum(G), classWS = sum(WS), classPTS = sum(PTS), classTRB = sum(TRB), classAST = sum(AST), classPPG = sum(PTS)/sum(G), classRPG = sum(TRB)/sum(G), classAPG = sum(AST)/sum(G))</code></pre>
+<p>To effectively compare the ’85 draft to others, we’ll want to be able to find them easily in graphics. Let’s use filter to create a dataframe that includes just the 1985 class and one that includes the four that we are interested in comparing.</p>
+<pre class="r"><code>eightyfiveclass &lt;- byclass %&gt;% filter(Year==1985)
+bigfour &lt;- byclass %&gt;% filter(Year==2003 | Year==1996 | Year==1985 | Year==1984)</code></pre>
+<p>In our dataset, we have four major statistics to judge players and classes off of: win shares, points, rebounds and assists.</p>
+<p>To give us a general idea of how the 1985 class stacks up to the competition, let’s compare these four statistics between classes. We’ll use bar plots to compare to total numbers and organize these plots in a cow plot to allow us to look at them together.</p>
+<p>First, we need to create our bar plots. Let’s kick it off with win shares.</p>
+<pre class="r"><code>big4plot1&lt;- ggplot() +
+  geom_bar(data=bigfour, aes(x=as.character(Year), weight=classWS)) +
+  geom_bar(data=eightyfiveclass, aes(x=as.character(Year), weight=classWS, fill=Year)) +
+  scale_x_discrete() +
+  scale_y_continuous(labels=comma) +
+  labs(
+    x = &quot;&quot;,
+    y = &quot;Win Shares&quot;,
+    title=&quot;The 1985 NBA draft class consistently ranks among the best&quot;, 
+    subtitle=&quot;Despite rarely being mentioned in the same breath as the 1984, 1996 and 2003 drafts, the group headlined by \nKarl Malone and Patrick Ewing tops the list in nearly every statistical category.&quot;
+    ) + 
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = &quot;bold&quot;),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank(),
+    legend.position = &quot;none&quot;
+  ) </code></pre>
+<p>Next: points.</p>
+<pre class="r"><code>big4plot2 &lt;- ggplot() +
+  geom_bar(data=bigfour, aes(x=as.character(Year), weight=classPTS)) +
+  geom_bar(data=eightyfiveclass, aes(x=as.character(Year), weight=classPTS, fill=Year)) +
+  scale_x_discrete() +
+  scale_y_continuous(labels=comma) +
+  labs(
+    x = &quot;&quot;,
+    y = &quot;Points&quot;,
+    title=&quot;&quot;, 
+    subtitle=&quot;
+    &quot;
+    ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = &quot;bold&quot;),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank(),
+    legend.position = &quot;none&quot;
+  )</code></pre>
+<p>Now rebounds.</p>
+<pre class="r"><code>big4plot3&lt;- ggplot() +
+  geom_bar(data=bigfour, aes(x=as.character(Year), weight=classTRB)) +
+  geom_bar(data=eightyfiveclass, aes(x=as.character(Year), weight=classTRB, fill=Year)) +
+  scale_x_discrete() +
+  scale_y_continuous(labels=comma) +
+  labs(
+    x = &quot;Draft Class&quot;,
+    y = &quot;Rebounds&quot;,
+    caption=&quot;&quot;
+    ) +
+  theme_minimal() +
+  theme(
+    axis.title = element_text(size = 8), 
+    panel.grid.minor = element_blank(), 
+    legend.position = &quot;none&quot;
+  )</code></pre>
+<p>And finally: assists.</p>
+<pre class="r"><code>big4plot4 &lt;- ggplot() +
+  geom_bar(data=bigfour, aes(x=as.character(Year), weight=classAST)) +
+  geom_bar(data=eightyfiveclass, aes(x=as.character(Year), weight=classAST, fill=Year)) +
+  scale_x_discrete() +
+  scale_y_continuous(labels=comma) +
+  labs(
+    x=&quot;Draft Class&quot;,
+    y = &quot;Assists&quot;,
+    caption=&quot;Source: Sports-Reference | By: Porter Pearson&quot;
+    ) +
+  theme_minimal() +
+  theme(
+    axis.title = element_text(size = 8), 
+    panel.grid.minor = element_blank(), 
+    legend.position = &quot;none&quot;
+  ) </code></pre>
+<p>Now that we have our bar plots, we can plug them into a cowplot.</p>
+<pre class="r"><code>plot_grid(big4plot1, big4plot2, big4plot3, big4plot4)</code></pre>
+<p><img src="http://porterpearson.github.io/2021/10/31/does-the-1985-nba-draft-class-deserve-more-credit/index_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>And there you have it. The 1985 class has more win shares, points, rebounds and assists than each of the ’84, ’96 and ’03 classes. So we can all agree right, ’85 class is the best of all-time?</p>
+<p>Not quite? Fine, let’s dig a little deeper.</p>
+<p>There’s quite a few ways to judge the success of individuals players. One of the most common and reliable marks of an outstanding season is an All-Star selection. By looking at what classes have the most All-Star players and selections, we can gain a good sense of how many impact players each class had.</p>
+<p>First, let’s create a dataframe that groups All-Stars by draft class.</p>
+<pre class="r"><code>allstarsbyclass &lt;- alltime %&gt;% 
+  filter(AllStars&gt;0) %&gt;% 
+  group_by(Year) %&gt;% 
+  summarise(
+    AllStarPlayers = n(),
+    AllStarAppearances = sum(AllStars)
+  )</code></pre>
+<p>Of course, being named an NBA All-Star is an incredible feat. But the distinction does mark an outstanding season, not career. Great players often pile up several selections. Considering the best classes are those with large numbers of great players, we should look for classes that feature players with above average numbers of All-Star selections. Creating a linear model and fit line gives us a baseline for how many All-Star selections each All-Star should produce, as well as a measure for how reliable that baseline is.</p>
+<pre class="r"><code>allstarsclassfit &lt;- lm(AllStarAppearances ~ AllStarPlayers, data = allstarsbyclass)
+summary(allstarsclassfit)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = AllStarAppearances ~ AllStarPlayers, data = allstarsbyclass)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -17.228  -6.475  -2.425   4.821  24.673 
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)      0.6721     2.9756   0.226    0.822    
+## AllStarPlayers   3.9507     0.4706   8.396 3.09e-12 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 9.659 on 71 degrees of freedom
+## Multiple R-squared:  0.4982, Adjusted R-squared:  0.4911 
+## F-statistic: 70.49 on 1 and 71 DF,  p-value: 3.088e-12</code></pre>
+<p>Our p-value tells us that what we have is definitely not random. Off to a good start. But how reliably can we predict All-Star appearances using the number of All-Stars in each class? Our adjusted R-squared value tells us that we can predict with about 50% accuracy. Considering All-Stars are chosen based off of votes cast by fans, players and media members - not by their actual stats - this is a fairly good value.</p>
+<p>Now that we have an established pattern, let’s look at how the classes in question fit into the model.</p>
+<p>First, we’ll need to make a dataframe that features the 1984, 1985, 1996 and 2003 draft classes.</p>
+<pre class="r"><code>bigfourallstars &lt;- allstarsbyclass %&gt;% filter(Year==1984 | Year==1985 | Year==1996 | Year==2003)</code></pre>
+<p>Since we’re plotting the relation between two numbers, we’ll use a scatterplot. To illustrate how well the top four classes live up to expectations, we can include our fit line in the visual.</p>
+<pre class="r"><code>ggplot() +
+  geom_point(data=allstarsbyclass, aes(x=AllStarPlayers, y=AllStarAppearances), color=&quot;grey&quot;) +
+  geom_point(data=bigfourallstars, aes(x=AllStarPlayers, y=AllStarAppearances), color=&quot;red&quot;) +
+  geom_smooth(data=allstarsbyclass, aes(x=AllStarPlayers, y=AllStarAppearances), meathod=&quot;lm&quot;) +
+  geom_text(aes(x=1.6, y=9.9, label=&quot;Fit Line&quot;), color=&quot;blue&quot;) +
+geom_text_repel(data=bigfourallstars, aes(x=AllStarPlayers, y=AllStarAppearances, label=Year)) + 
+  labs(
+    title = &quot;The 1985 class doesn&#39;t compare to others in quality of All-Stars&quot;,
+    subtitle = &quot;While the 1984, 1996 and 2003 drafts average a total of 58 All-Star appearances, the 1985 squad manages \nonly 45. In addition, more than half of those come from Malone and Ewing.&quot;,
+    x = &quot;All-Star Players&quot;,
+    y = &quot;Total All-Star Appearances&quot;,
+    caption = &quot;Source: Sports-Reference | By: Porter Pearson&quot;
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 15, face = &quot;bold&quot;),
+    plot.subtitle = element_text(size = 10),
+    axis.title = element_text(size = 8),
+    panel.grid.minor = element_blank()
+  )</code></pre>
+<p><img src="http://porterpearson.github.io/2021/10/31/does-the-1985-nba-draft-class-deserve-more-credit/index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>So while the 1984, 1996 and 2003 classes exceed expectations, the 1985 class simply meets them. Of course, 10 All-Stars and 45 All-Star appearances is nothing to scoff at. But when the other top classes are producing more selections with less All-Stars, that may be a indication that the class has an abundance of lower quality All-Stars. In this case, the 1985 class features four one-time All-Stars compared to two All-Stars with 10 or more selections. To contrast those numbers with other top classes, the ’84 class includes two one-time All-Stars compared to four 10-time All-Stars. The ’96 draft saw just one single-selection All-Star compared to three 10-time All-Stars. Finally, the ’03 class turned out four one-time All-Stars but managed four 10-time selections as well.</p>
+<p>Where does this leave us? We now have a class that stands out from the crowd in nearly every statistical measure, but doesn’t measure up to other top classes when looking at the number of high quality players. How’d we get here?</p>
+<p>Well, we’ve established that more than half of the class’ All-Star selections came by way of Malone and Ewing. So, let’s take a look at the talent at the top of the class. First, let’s create a few new columns that provide player rankings for each major stat.</p>
+<pre class="r"><code>alltime$WSrank &lt;- rank(-alltime$WS)
+alltime$PTSrank &lt;- rank(-alltime$PTS)
+alltime$TRBrank &lt;- rank(-alltime$TRB)
+alltime$ASTrank &lt;- rank(-alltime$AST)
+alltime$VORPrank &lt;- rank(-alltime$VORP)</code></pre>
+<p>To make the data a bit more readable, let’s put it in a table. First, let’s create a new dataframe that looks only at the top 10 in win shares - one of the best ways to measure a player’s impact on team success.</p>
+<pre class="r"><code>alltimetable &lt;- alltime %&gt;% select(Player, WSrank, PTSrank, TRBrank, ASTrank) %&gt;% filter(WSrank&lt;=10) %&gt;% arrange(WSrank)</code></pre>
+<p>Now, let’s create the table.</p>
+<pre class="r"><code>alltimetable %&gt;% 
+  gt() %&gt;%
+  cols_label(
+    WSrank = &quot;Win Shares Rank&quot;,
+    PTSrank = &quot;Points Rank&quot;,
+    TRBrank = &quot;Rebound Rank&quot;,
+    ASTrank = &quot;Assists Rank&quot;
+  ) %&gt;%
+  tab_header(
+    title = &quot;Malone&#39;s career rankings land him on a short list of statistical greats&quot;,
+    subtitle = &quot;The Mailman is one of three players to fall in the top 10 in win shares, points and rebounds. Add in his top 60 finish in assists - second among power forwards - and the 1985 class&#39; numerical dominance makes a bit more sense.&quot;
+  ) %&gt;% tab_style(
+    style = cell_text(color = &quot;black&quot;, weight = &quot;bold&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;title&quot;)
+  ) %&gt;% tab_style(
+    style = cell_text(color = &quot;black&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;subtitle&quot;)
+  ) %&gt;%
+  tab_source_note(
+    source_note = md(&quot;Source: Sports-Reference | By: Porter Pearson&quot;)
+  ) %&gt;%
+  tab_style(
+     locations = cells_column_labels(columns = everything()),
+     style = list(
+       cell_borders(sides = &quot;bottom&quot;, weight = px(3)),
+       cell_text(weight = &quot;bold&quot;, size=12)
+     )
+   ) %&gt;%
+  opt_row_striping() %&gt;% 
+  opt_table_lines(&quot;none&quot;) %&gt;%
+  tab_style(
+    style = list(
+      cell_fill(color = &quot;#002B5C&quot;),
+      cell_text(color = &quot;#F9A01B&quot;)
+      ),
+    locations = cells_body(
+      rows = Player == &quot;Karl Malone&quot;)
+  )</code></pre>
+<div id="plfkhrzsol" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#plfkhrzsol .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: none;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#plfkhrzsol .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#plfkhrzsol .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#plfkhrzsol .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#plfkhrzsol .gt_bottom_border {
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#plfkhrzsol .gt_col_headings {
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#plfkhrzsol .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#plfkhrzsol .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#plfkhrzsol .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#plfkhrzsol .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#plfkhrzsol .gt_column_spanner {
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#plfkhrzsol .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#plfkhrzsol .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#plfkhrzsol .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#plfkhrzsol .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#plfkhrzsol .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: none;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#plfkhrzsol .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#plfkhrzsol .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#plfkhrzsol .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#plfkhrzsol .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#plfkhrzsol .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: none;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#plfkhrzsol .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#plfkhrzsol .gt_table_body {
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#plfkhrzsol .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#plfkhrzsol .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#plfkhrzsol .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#plfkhrzsol .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#plfkhrzsol .gt_left {
+  text-align: left;
+}
+
+#plfkhrzsol .gt_center {
+  text-align: center;
+}
+
+#plfkhrzsol .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#plfkhrzsol .gt_font_normal {
+  font-weight: normal;
+}
+
+#plfkhrzsol .gt_font_bold {
+  font-weight: bold;
+}
+
+#plfkhrzsol .gt_font_italic {
+  font-style: italic;
+}
+
+#plfkhrzsol .gt_super {
+  font-size: 65%;
+}
+
+#plfkhrzsol .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <th colspan="5" class="gt_heading gt_title gt_font_normal" style="color: #000000; text-align: left; font-weight: bold;">Malone's career rankings land him on a short list of statistical greats</th>
+    </tr>
+    <tr>
+      <th colspan="5" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="color: #000000; text-align: left;">The Mailman is one of three players to fall in the top 10 in win shares, points and rebounds. Add in his top 60 finish in assists - second among power forwards - and the 1985 class' numerical dominance makes a bit more sense.</th>
+    </tr>
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">Player</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">Win Shares Rank</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">Points Rank</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">Rebound Rank</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">Assists Rank</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">Kareem Abdul-Jabbar</td>
+<td class="gt_row gt_right">1</td>
+<td class="gt_row gt_right">1</td>
+<td class="gt_row gt_right">3</td>
+<td class="gt_row gt_right">44</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">Wilt Chamberlain</td>
+<td class="gt_row gt_right gt_striped">2</td>
+<td class="gt_row gt_right gt_striped">7</td>
+<td class="gt_row gt_right gt_striped">1</td>
+<td class="gt_row gt_right gt_striped">78</td></tr>
+    <tr><td class="gt_row gt_left">LeBron James</td>
+<td class="gt_row gt_right">3</td>
+<td class="gt_row gt_right">3</td>
+<td class="gt_row gt_right">41</td>
+<td class="gt_row gt_right">8</td></tr>
+    <tr><td class="gt_row gt_left gt_striped" style="background-color: #002B5C; color: #F9A01B;">Karl Malone</td>
+<td class="gt_row gt_right gt_striped" style="background-color: #002B5C; color: #F9A01B;">4</td>
+<td class="gt_row gt_right gt_striped" style="background-color: #002B5C; color: #F9A01B;">2</td>
+<td class="gt_row gt_right gt_striped" style="background-color: #002B5C; color: #F9A01B;">6</td>
+<td class="gt_row gt_right gt_striped" style="background-color: #002B5C; color: #F9A01B;">57</td></tr>
+    <tr><td class="gt_row gt_left">Michael Jordan</td>
+<td class="gt_row gt_right">5</td>
+<td class="gt_row gt_right">5</td>
+<td class="gt_row gt_right">133</td>
+<td class="gt_row gt_right">46</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">John Stockton</td>
+<td class="gt_row gt_right gt_striped">6</td>
+<td class="gt_row gt_right gt_striped">49</td>
+<td class="gt_row gt_right gt_striped">384</td>
+<td class="gt_row gt_right gt_striped">1</td></tr>
+    <tr><td class="gt_row gt_left">Tim Duncan</td>
+<td class="gt_row gt_right">7</td>
+<td class="gt_row gt_right">14</td>
+<td class="gt_row gt_right">5</td>
+<td class="gt_row gt_right">101</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">Dirk Nowitzki</td>
+<td class="gt_row gt_right gt_striped">8</td>
+<td class="gt_row gt_right gt_striped">6</td>
+<td class="gt_row gt_right gt_striped">25</td>
+<td class="gt_row gt_right gt_striped">148</td></tr>
+    <tr><td class="gt_row gt_left">Kevin Garnett</td>
+<td class="gt_row gt_right">9</td>
+<td class="gt_row gt_right">17</td>
+<td class="gt_row gt_right">8</td>
+<td class="gt_row gt_right">51</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">Chris Paul</td>
+<td class="gt_row gt_right gt_striped">10</td>
+<td class="gt_row gt_right gt_striped">47</td>
+<td class="gt_row gt_right gt_striped">271</td>
+<td class="gt_row gt_right gt_striped">5</td></tr>
+  </tbody>
+  <tfoot class="gt_sourcenotes">
+    <tr>
+      <td class="gt_sourcenote" colspan="5">Source: Sports-Reference | By: Porter Pearson</td>
+    </tr>
+  </tfoot>
+  
+</table>
+</div>
+<p>Having a player that ranks near the top in essentially every category certainly doesn’t hurt the class’ total numbers. As noted, Malone stands alongside Kareem Abdul-Jabbar and Wilt Chamberlain as one of three players to rank in the top 10 in win shares, points and rebounds. Not bad company.</p>
+<p>In addition, the Mailman is one of four players to average 25 points and 10 rebounds on their career. The other three: Wilt Chamberlain, Elgin Baylor and Bob Pettit - drafted in 1959, 1958 and 1954, respectively.</p>
+<p>Another reminder, Malone ranks sixth all-time in games played.</p>
+<p>Whether looking at longevity and consistency, peak stats or career totals, few players can match the Jazz legend’s statistical dominance. In this case, Malone nearly single-handedly elevates the ’85 class into the debate over who is greatest draft class of all time.</p>
+<p>So, the question remains: does the 1985 NBA draft class deserve more credit?</p>
+<p>Yes, but don’t go overboard. Between the class’ total stats, number of All-Stars and Hall of Fame inductees and talent at the top of the draft, the class deserves to be mentioned alongside the 1984, 1996 and 2003 drafts. But at the end of the day, the ’85 draft is the clear-cut fourth best draft in NBA history.</p>
+<p>While the class deserves respect as a whole, Malone may deserve more credit himself. Ranked 19th in Complex’s 2021 rankings of the best NBA players of all time, 14th in USA Today’s 2021 ranking of the greatest players of all time and 20th in Bleacher Report’s 2019 all-time player rankings, the power forward makes a strong case to be considered a top-10 player - despite lacking a championship ring. He can thank Michael Jordan for that one.</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+
