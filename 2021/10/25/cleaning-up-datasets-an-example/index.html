@@ -73,7 +73,7 @@
 
     <div class="article-content">
       
-<script src="http://porterpearson.github.io/2021/10/25/cleaning-up-datasets-an-example/index_files/header-attrs/header-attrs.js"></script>
+<script src="/2021/10/25/cleaning-up-datasets-an-example/index_files/header-attrs/header-attrs.js"></script>
 
 
 <p>Sometimes data isn’t packaged the way we need it to be. Let’s walk through an example on how to fix that.</p>
@@ -212,13 +212,13 @@ worstgames</code></pre>
 <pre class="r"><code>ggplot() +
   geom_point(data=goodlogswithdifferential, aes(x=TeamScore, y=OpponentScore), color=&quot;grey&quot;) +
   geom_point(data=worstgames, aes(x=TeamScore, y=OpponentScore), color=&quot;red&quot;)</code></pre>
-<p><img src="http://porterpearson.github.io/2021/10/25/cleaning-up-datasets-an-example/index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><img src="/2021/10/25/cleaning-up-datasets-an-example/index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>Let’s circle it as well - geom_encircle does the trick.</p>
 <pre class="r"><code>ggplot() +
   geom_point(data=goodlogswithdifferential, aes(x=TeamScore, y=OpponentScore), color=&quot;grey&quot;) +
   geom_point(data=worstgames, aes(x=TeamScore, y=OpponentScore), color=&quot;red&quot;) +
   geom_encircle(data=worstgames, aes(x=TeamScore, y=OpponentScore), s_shape=.5, expand=.03, color=&quot;red&quot;)</code></pre>
-<p><img src="http://porterpearson.github.io/2021/10/25/cleaning-up-datasets-an-example/index_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p><img src="/2021/10/25/cleaning-up-datasets-an-example/index_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 <p>All that’s left is the finishing touches.</p>
 <p>First, let’s add some labels. We’ll add a title, subtitle, caption and axis labels.</p>
 <p>Next, we’ll apply the minimal theme.</p>
@@ -234,7 +234,7 @@ worstgames</code></pre>
     plot.subtitle = element_text(size=10), 
     panel.grid.minor = element_blank()
     )</code></pre>
-<p><img src="http://porterpearson.github.io/2021/10/25/cleaning-up-datasets-an-example/index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p><img src="/2021/10/25/cleaning-up-datasets-an-example/index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>And there we have it: the biggest blowouts of the 2019 college football season.</p>
 
     </div>

@@ -73,7 +73,7 @@
 
     <div class="article-content">
       
-<script src="http://porterpearson.github.io/2021/10/31/does-the-1985-nba-draft-class-deserve-more-credit/index_files/header-attrs/header-attrs.js"></script>
+<script src="/2021/10/31/does-the-1985-nba-draft-class-deserve-more-credit/index_files/header-attrs/header-attrs.js"></script>
 
 
 <p>Every year when the NBA draft rolls around, the question arises: what is the greatest NBA draft class of all time?</p>
@@ -178,7 +178,7 @@ bigfour &lt;- byclass %&gt;% filter(Year==2003 | Year==1996 | Year==1985 | Year=
   ) </code></pre>
 <p>Now that we have our bar plots, we can plug them into a cowplot.</p>
 <pre class="r"><code>plot_grid(big4plot1, big4plot2, big4plot3, big4plot4)</code></pre>
-<p><img src="http://porterpearson.github.io/2021/10/31/does-the-1985-nba-draft-class-deserve-more-credit/index_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><img src="/2021/10/31/does-the-1985-nba-draft-class-deserve-more-credit/index_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <p>And there you have it. The 1985 class has more win shares, points, rebounds and assists than each of the ’84, ’96 and ’03 classes. So we can all agree right, ’85 class is the best of all-time?</p>
 <p>Not quite? Fine, let’s dig a little deeper.</p>
 <p>There’s quite a few ways to judge the success of individuals players. One of the most common and reliable marks of an outstanding season is an All-Star selection. By looking at what classes have the most All-Star players and selections, we can gain a good sense of how many impact players each class had.</p>
@@ -236,7 +236,7 @@ geom_text_repel(data=bigfourallstars, aes(x=AllStarPlayers, y=AllStarAppearances
     axis.title = element_text(size = 8),
     panel.grid.minor = element_blank()
   )</code></pre>
-<p><img src="http://porterpearson.github.io/2021/10/31/does-the-1985-nba-draft-class-deserve-more-credit/index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p><img src="/2021/10/31/does-the-1985-nba-draft-class-deserve-more-credit/index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 <p>So while the 1984, 1996 and 2003 classes exceed expectations, the 1985 class simply meets them. Of course, 10 All-Stars and 45 All-Star appearances is nothing to scoff at. But when the other top classes are producing more selections with less All-Stars, that may be a indication that the class has an abundance of lower quality All-Stars. In this case, the 1985 class features four one-time All-Stars compared to two All-Stars with 10 or more selections. To contrast those numbers with other top classes, the ’84 class includes two one-time All-Stars compared to four 10-time All-Stars. The ’96 draft saw just one single-selection All-Star compared to three 10-time All-Stars. Finally, the ’03 class turned out four one-time All-Stars but managed four 10-time selections as well.</p>
 <p>Where does this leave us? We now have a class that stands out from the crowd in nearly every statistical measure, but doesn’t measure up to other top classes when looking at the number of high quality players. How’d we get here?</p>
 <p>Well, we’ve established that more than half of the class’ All-Star selections came by way of Malone and Ewing. So, let’s take a look at the talent at the top of the class. First, let’s create a few new columns that provide player rankings for each major stat.</p>
