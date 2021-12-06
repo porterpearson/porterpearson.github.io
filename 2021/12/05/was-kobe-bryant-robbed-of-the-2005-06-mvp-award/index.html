@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.88.1" />
+
+
+<title>Was Kobe Bryant robbed of the 2005-06 MVP award? - Porter Pearson&#39;s GitHub Site</title>
+<meta property="og:title" content="Was Kobe Bryant robbed of the 2005-06 MVP award? - Porter Pearson&#39;s GitHub Site">
+
+
+  <link href='http://porterpearson.github.io/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/GitHub.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/IMG_0488.JPG"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://github.com/porterpearson">GitHub</a></li>
+    
+    <li><a href="https://instagram.com/porter.pearson">Instagram</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">18 min read</span>
+    
+
+    <h1 class="article-title">Was Kobe Bryant robbed of the 2005-06 MVP award?</h1>
+
+    
+    <span class="article-date">2021-12-05</span>
+    
+
+    <div class="article-content">
+      
+<script src="http://porterpearson.github.io/2021/12/05/was-kobe-bryant-robbed-of-the-2005-06-mvp-award/index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>It’s the most prestigious individual award in basketball. It can single-handedly push a player’s ticket to the Hall of Fame. It’s the NBA MVP award.</p>
+<p>Many years, a single player stands head and shoulders above the rest and runs away with the award. In 2006, Steve Nash won 924 of a possible 1250 points in the MVP vote. Yet, he didn’t quite stand head and shoulders above the rest of the field. A couple other players had legitimate arguments to win MVP. But one stands out looking back 15 years later: Kobe Bryant.</p>
+<p>So, was he robbed of the 2005-06 MVP award?</p>
+<p>Let’s get started. First, let’s load up a couple libraries and import our data. We’ll be looking at per game averages, advanced stats, MVP voting results and historical data.</p>
+<pre class="r"><code>library(tidyverse)
+library(waffle)
+library(ggrepel)
+library(gt)</code></pre>
+<pre class="r"><code>pergame &lt;- read_csv(&quot;/Users/Porter/OneDrive/UNL Academics/SPMC350/Homework/2006 Stats/pergame2006.csv&quot;)
+pergame &lt;- pergame %&gt;% mutate(
+  Player=gsub(&quot;\\\\.*&quot;,&quot;&quot;,Player),
+  Player=gsub(&quot;\\*&quot;, &quot;&quot;, Player),
+  Pos=gsub(&quot;\\-.*&quot;, &quot;&quot;, Pos))</code></pre>
+<pre class="r"><code>advanced &lt;- read_csv(&quot;/Users/Porter/OneDrive/UNL Academics/SPMC350/Homework/2006 Stats/advanced2006.csv&quot;)
+advanced &lt;- advanced %&gt;% mutate(
+  Player=gsub(&quot;\\\\.*&quot;,&quot;&quot;,Player),
+  Player=gsub(&quot;\\*&quot;, &quot;&quot;, Player))</code></pre>
+<pre class="r"><code>mvpvoting &lt;- read_csv(&quot;/Users/Porter/OneDrive/UNL Academics/SPMC350/Homework/2006 Stats/mvpvoting2006.csv&quot;)</code></pre>
+<pre class="r"><code>alltimescorers &lt;- read_csv(&quot;/Users/Porter/OneDrive/UNL Academics/SPMC350/Homework/2006 Stats/top10ppg.csv&quot;)</code></pre>
+<pre class="r"><code>leagueaverages &lt;- read_csv(&quot;/Users/Porter/OneDrive/UNL Academics/SPMC350/Homework/2006 Stats/nbaleagueaverages.csv&quot;)
+leagueaverages &lt;- leagueaverages %&gt;% mutate(
+  Season=gsub(&quot;\\-.*&quot;,&quot;&quot;,Season))</code></pre>
+<p>I’ll also create a few dataframes to highlight the two players we’re interested in looking at.</p>
+<pre class="r"><code>kobeadvanced &lt;- advanced %&gt;% filter(Player == &quot;Kobe Bryant&quot;)
+nashadvanced &lt;- advanced %&gt;% filter(Player == &quot;Steve Nash&quot;)
+kobemvpvoting &lt;- mvpvoting %&gt;% filter(Player == &quot;Kobe Bryant&quot;)
+nashmvpvoting &lt;- mvpvoting %&gt;% filter(Player == &quot;Steve Nash&quot;)</code></pre>
+<p>Let’s start off with a basic look at what each player did on the season.</p>
+<pre class="r"><code>comparisontable &lt;- pergame %&gt;% filter(Player == &quot;Kobe Bryant&quot; | Player == &quot;Steve Nash&quot;) %&gt;% select(Player, PTS, AST, TRB, STL, BLK, TOV, FGpct, `3Ppct`, FTpct)</code></pre>
+<pre class="r"><code>comparisontable %&gt;% 
+  gt() %&gt;%
+  cols_label(
+    Player = &quot;Player&quot;,
+    PTS = &quot;PPG&quot;,
+    AST = &quot;APG&quot;,
+    TRB = &quot;RPG&quot;,
+    STL = &quot;SPG&quot;,
+    BLK = &quot;BPG&quot;,
+    TOV = &quot;TOV&quot;,
+    FGpct = &quot;FG%&quot;,
+    `3Ppct` = &quot;3P%&quot;,
+    FTpct = &quot;FT%&quot;
+  ) %&gt;%
+  tab_header(
+    title = &quot;A Quick Comparison&quot;,
+    subtitle = &quot;Each MVP candidate dominated their respective fields, with Bryant earning a scoring title at 35.4 points per game and Nash pacing the league with 10.5 assists per game.&quot;
+  ) %&gt;% tab_style(
+    style = cell_text(color = &quot;black&quot;, weight = &quot;bold&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;title&quot;)
+  ) %&gt;% tab_style(
+    style = cell_text(color = &quot;black&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;subtitle&quot;)
+  ) %&gt;%
+  tab_source_note(
+    source_note = md(&quot;Source: Sports-Reference | By: Porter Pearson&quot;)
+  ) %&gt;%
+  tab_style(
+     locations = cells_column_labels(columns = everything()),
+     style = list(
+       cell_borders(sides = &quot;bottom&quot;, weight = px(3)),
+       cell_text(weight = &quot;bold&quot;, size=12)
+     )
+   ) %&gt;%
+  opt_row_striping() %&gt;% 
+  opt_table_lines(&quot;none&quot;)</code></pre>
+<div id="qmoishdcax" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#qmoishdcax .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: none;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#qmoishdcax .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qmoishdcax .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#qmoishdcax .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#qmoishdcax .gt_bottom_border {
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qmoishdcax .gt_col_headings {
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qmoishdcax .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#qmoishdcax .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#qmoishdcax .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#qmoishdcax .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#qmoishdcax .gt_column_spanner {
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#qmoishdcax .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#qmoishdcax .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#qmoishdcax .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#qmoishdcax .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#qmoishdcax .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: none;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#qmoishdcax .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#qmoishdcax .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qmoishdcax .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#qmoishdcax .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qmoishdcax .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: none;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#qmoishdcax .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#qmoishdcax .gt_table_body {
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qmoishdcax .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qmoishdcax .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#qmoishdcax .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qmoishdcax .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#qmoishdcax .gt_left {
+  text-align: left;
+}
+
+#qmoishdcax .gt_center {
+  text-align: center;
+}
+
+#qmoishdcax .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#qmoishdcax .gt_font_normal {
+  font-weight: normal;
+}
+
+#qmoishdcax .gt_font_bold {
+  font-weight: bold;
+}
+
+#qmoishdcax .gt_font_italic {
+  font-style: italic;
+}
+
+#qmoishdcax .gt_super {
+  font-size: 65%;
+}
+
+#qmoishdcax .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <th colspan="10" class="gt_heading gt_title gt_font_normal" style="color: #000000; text-align: left; font-weight: bold;">A Quick Comparison</th>
+    </tr>
+    <tr>
+      <th colspan="10" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="color: #000000; text-align: left;">Each MVP candidate dominated their respective fields, with Bryant earning a scoring title at 35.4 points per game and Nash pacing the league with 10.5 assists per game.</th>
+    </tr>
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">Player</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">PPG</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">APG</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">RPG</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">SPG</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">BPG</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">TOV</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">FG%</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">3P%</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">FT%</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">Kobe Bryant</td>
+<td class="gt_row gt_right">35.4</td>
+<td class="gt_row gt_right">4.5</td>
+<td class="gt_row gt_right">5.3</td>
+<td class="gt_row gt_right">1.8</td>
+<td class="gt_row gt_right">0.4</td>
+<td class="gt_row gt_right">3.1</td>
+<td class="gt_row gt_right">0.450</td>
+<td class="gt_row gt_right">0.347</td>
+<td class="gt_row gt_right">0.850</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">Steve Nash</td>
+<td class="gt_row gt_right gt_striped">18.8</td>
+<td class="gt_row gt_right gt_striped">10.5</td>
+<td class="gt_row gt_right gt_striped">4.2</td>
+<td class="gt_row gt_right gt_striped">0.8</td>
+<td class="gt_row gt_right gt_striped">0.2</td>
+<td class="gt_row gt_right gt_striped">3.5</td>
+<td class="gt_row gt_right gt_striped">0.512</td>
+<td class="gt_row gt_right gt_striped">0.439</td>
+<td class="gt_row gt_right gt_striped">0.921</td></tr>
+  </tbody>
+  <tfoot class="gt_sourcenotes">
+    <tr>
+      <td class="gt_sourcenote" colspan="10">Source: Sports-Reference | By: Porter Pearson</td>
+    </tr>
+  </tfoot>
+  
+</table>
+</div>
+<p>From a glance, it’s clear that we have two very different players who excel at their style of play. With that in mind, it’s difficult to say one had a better season than the other based off these stats alone. On one end Bryant torched the league with his scoring ability, highlighted by an incredible January in which he averaged 43.4 points per game over 13 games and scored 81 points against the Toronto Raptors. On the season, he averaged 35.4 PPG, the highest mark since Michael Jordan’s 34.98 during the 1987-88 season. On the other end Nash followed up his 2004-05 MVP season with another incredible display of point guard play. The Suns’ star dished out double digit assists per game, fitting perfectly into head coach Mike D’Antoni’s run-and-gun offense - one that lead the league in points, assists, field goal percentage and three-point percentage.</p>
+<p>The biggest argument in favor of Nash may have been his team’s success. Despite missing a star player in Amar’e Stoudemire, the Suns managed to win 54 games, the fourth most in the league. To compare, Bryant’s Lakers ended the season with a record of 45-37, good for 10th best in the league. While both made the playoffs, Nash took the Suns to the Western Conference Finals.</p>
+<p>But it’s short sighted to only look at the team’s win totals to judge each player. When looking at MVP, we’re trying to find who was most valuable to their team. So, let’s take a look at each player’s impact on their respective teams’ success. I’ll use a waffle chart to look at each players’ win shares with respect to their teams’ total win shares.</p>
+<p>First, I’ll create two dataframes showing the win shares for each team and star player.</p>
+<pre class="r"><code>LALWS &lt;- c(&quot;Rest of Team&quot;=34, &quot;Kobe Bryant&quot;=15.3, 6.8)
+PHOWS &lt;- c(&quot;Rest of Team&quot;=43.7, &quot;Steve Nash&quot;=12.4)</code></pre>
+<p>Now, I’ll create the chart using an iron.</p>
+<pre class="r"><code>iron(
+ waffle(LALWS, 
+        rows = 3, 
+        title=&quot;Lakers&#39; Win Shares&quot;, 
+        xlab=&quot;1 square = 1 WS&quot;, 
+        colors = c(&quot;grey&quot;, &quot;#552583&quot;, &quot;white&quot;)
+        ),
+ waffle(PHOWS, 
+        rows = 3, 
+        title=&quot;Suns&#39; Win Shares&quot;, 
+        xlab=&quot;1 square = 1 WS&quot;, 
+        colors = c(&quot;grey&quot;, &quot;#E56020&quot;)
+        )
+)</code></pre>
+<p><img src="http://porterpearson.github.io/2021/12/05/was-kobe-bryant-robbed-of-the-2005-06-mvp-award/index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>So despite his team winning nine less games, Bryant managed more win shares on the season. His 15.3 shares were the fourth most in the league. Despite winning the MVP award, Nash finished just 10th in win shares. A respectable finish for an All-Star or even All-NBA player, but an MVP? You’d like to see a higher finish. In fact, his 12.4 shares are the 10th fewest for an MVP in NBA history. But that’s not quite it. Nash didn’t lead his own team in win shares, Shawn Marion did. The power forward had a great season, averaging 21.8 points, 11.8 rebounds, 2.0 steals and 1.7 blocks. His performance was even good enought to earn him a spot on the list of players who received MVP votes.</p>
+<p>Bryant wasn’t as lucky. With Los Angeles having traded Shaquille O’Neal to Miami two years prior, the shooting guard was left with a shoddy group of supporting players. Aside from Bryant, not a single player on the Lakers averaged 15 points per game. So, the team relied heavily on their star player. Luckily for them, he rose to the occasion.</p>
+<p>Let’s take a look at what I mean.</p>
+<p>First, let’s create a dataframe that only looks at players who spent significant time on the floor. I’ll use filter to only include players that saw playing time in at least half of their team’s games.</p>
+<pre class="r"><code>rotationplayersadvanced &lt;- advanced %&gt;% filter(G&gt;=41)</code></pre>
+<p>Now, we’ll create a scatterplot that looks at player efficiency and usage rate.</p>
+<p>Player efficiency is one of the most effective ways to look at everything a player does on the floor. The measure was created by an ESPN columnist John Hollinger, who described it by saying, “The PER sums up all a player’s positive accomplishments, subtracts the negative accomplishments, and returns a per-minute rating of a player’s performance.” Instead of looking at something like points, I’ll use this measure to adjust for the fact that Nash and Bryant have two very different styles of play.</p>
+<pre class="r"><code>ggplot() +
+  geom_point(data=rotationplayersadvanced, aes(x=USGpct, y=PER), color=&quot;light grey&quot;) +
+  geom_point(data=kobeadvanced, aes(x=USGpct, y=PER), color=&quot;#552583&quot;) +
+  geom_point(data=nashadvanced, aes(x=USGpct, y=PER), color=&quot;#E56020&quot;) +
+  geom_text_repel(data=kobeadvanced, aes(x=USGpct, y=PER, label=Player)) +
+  geom_text_repel(data=nashadvanced, aes(x=USGpct, y=PER, label=Player)) +
+  labs(
+    title = &quot;Bryant was more efficient while maintaining a heavy workload&quot;,
+    subtitle = &quot;While Nash&#39;s 23.3 PER is nothing to scoff at, Bryant&#39;s 28.0 fell just shy of LeBron James&#39; and Dirk Nowitzki&#39;s \nleague leading 28.1 - while the Lakers&#39; star paced the league in usage.&quot;,
+    x = &quot;Usage Percentage&quot;,
+    y = &quot;Player Efficiency Rating&quot;,
+    caption = &quot;Source: Sports-Reference | By: Porter Pearson&quot;
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = &quot;bold&quot;),
+    plot.subtitle = element_text(size = 10),
+    axis.title = element_text(size = 9),
+    panel.grid.minor = element_blank()
+  )</code></pre>
+<p><img src="http://porterpearson.github.io/2021/12/05/was-kobe-bryant-robbed-of-the-2005-06-mvp-award/index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>There’s no denying that Nash had a great season. There’s a reason he won MVP. But Bryant was more effective while on the floor despite lacking the level of talent around him that Nash had. Further, Bryant . No team relied on any one player heavier than the Lakers relied on their Hall of Fame guard, and almost nobody was more effective when given that opportunity. Having said that, there is an argument to be made that Bryant put up bigger numbers than Nash because he had more opportunities, as the usage rate would suggest. But we’ll touch on why that isn’t quite true later on.</p>
+<p>But let’s continue on looking at efficiency. Because while looking at player efficiency itself is wonderful, it doesn’t tell the whole story. To see the other side, we need to look at the voting results for the MVP award.</p>
+<p>To do so, let’s create another scatterplot.</p>
+<pre class="r"><code>ggplot() + 
+  geom_point(data=mvpvoting, aes(x=PER, y=First), color=&quot;grey&quot;) +
+  geom_point(data=kobemvpvoting, aes(x=PER, y=First), color=&quot;#552583&quot;) +
+  geom_point(data=nashmvpvoting, aes(x=PER, y=First), color=&quot;#E56020&quot;) +
+  geom_text_repel(data=kobemvpvoting, aes(x=PER, y=First, label=Player)) +
+  geom_text_repel(data=nashmvpvoting, aes(x=PER, y=First, label=Player)) +
+  labs(
+    title = &quot;Nash earned more votes than he may have deserved&quot;,
+    subtitle = &quot;Despite winning the 2006 MVP race handily, the point guard ranked nineth out of 11 vote earners in efficiency.&quot;,
+    x = &quot;Player Efficiency Rating&quot;,
+    y = &quot;First Place Votes&quot;,
+    caption = &quot;Source: Sports-Reference | By: Porter Pearson&quot;
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 18, face = &quot;bold&quot;),
+    plot.subtitle = element_text(size = 10),
+    axis.title = element_text(size = 9),
+    panel.grid.minor = element_blank()
+  )</code></pre>
+<p><img src="http://porterpearson.github.io/2021/12/05/was-kobe-bryant-robbed-of-the-2005-06-mvp-award/index_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>Not only did Nash win the MVP award, he ran away with it. But the numbers just don’t seem to agree. While the point guard did lead lead the NBA’s best offense to the second seed in the Western Conference, his individual numbers aside from assists fall short of what you may expect out of an MVP.</p>
+<p>Bryant, on the other hand, seemingly outperformed his voting results. While he received the second most first-place votes, he finished fourth in the final voting. To better understand what this means, let’s look at how the MVP voting works:</p>
+<p>First-place vote: 10 points
+Second-place vote: 7 points
+Third-place vote: 5 points
+Fourth-place vote: 3 points
+Fifth-place vote: 1 point</p>
+<p>So, the final results may imply that many of those who gave first-place votes to Nash, James or Nowitzki didn’t think highly of Bryant’s season. The shooting guard didn’t receive the same amount of non-first-place votes that others did, lowering his point total.</p>
+<p>But why? Let’s take a look at just how historical Bryant’s season was.</p>
+<pre class="r"><code>alltimescorers %&gt;% 
+  gt() %&gt;%
+  cols_label(
+    Rank = &quot;All-Time Rank&quot;,
+    PPG = &quot;Points Per Game&quot;
+  ) %&gt;%
+  tab_header(
+    title = &quot;Bryant&#39;s 2006 season is among the best scoring campaigns of all time&quot;,
+    subtitle = &quot;The Lakers&#39; star is one of five players to average over 35 points per game and was the first to do so since Michael Jordan.&quot;
+  ) %&gt;% tab_style(
+    style = cell_text(color = &quot;black&quot;, weight = &quot;bold&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;title&quot;)
+  ) %&gt;% tab_style(
+    style = cell_text(color = &quot;black&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;subtitle&quot;)
+  ) %&gt;%
+  tab_source_note(
+    source_note = md(&quot;Source: Sports-Reference | By: Porter Pearson&quot;)
+  ) %&gt;%
+  tab_style(
+     locations = cells_column_labels(columns = everything()),
+     style = list(
+       cell_borders(sides = &quot;bottom&quot;, weight = px(3)),
+       cell_text(weight = &quot;bold&quot;, size=12)
+     )
+   ) %&gt;%
+  opt_row_striping() %&gt;% 
+  opt_table_lines(&quot;none&quot;) %&gt;%
+  tab_style(
+    style = list(
+      cell_fill(color = &quot;#552583&quot;),
+      cell_text(color = &quot;#FDB927&quot;)
+      ),
+    locations = cells_body(
+      rows = Player == &quot;Kobe Bryant&quot;)
+  )</code></pre>
+<div id="jrimljrley" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#jrimljrley .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: none;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#jrimljrley .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#jrimljrley .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#jrimljrley .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#jrimljrley .gt_bottom_border {
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jrimljrley .gt_col_headings {
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#jrimljrley .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#jrimljrley .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#jrimljrley .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#jrimljrley .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#jrimljrley .gt_column_spanner {
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#jrimljrley .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#jrimljrley .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#jrimljrley .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#jrimljrley .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#jrimljrley .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: none;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#jrimljrley .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#jrimljrley .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jrimljrley .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#jrimljrley .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jrimljrley .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: none;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#jrimljrley .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#jrimljrley .gt_table_body {
+  border-top-style: none;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jrimljrley .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#jrimljrley .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#jrimljrley .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#jrimljrley .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#jrimljrley .gt_left {
+  text-align: left;
+}
+
+#jrimljrley .gt_center {
+  text-align: center;
+}
+
+#jrimljrley .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#jrimljrley .gt_font_normal {
+  font-weight: normal;
+}
+
+#jrimljrley .gt_font_bold {
+  font-weight: bold;
+}
+
+#jrimljrley .gt_font_italic {
+  font-style: italic;
+}
+
+#jrimljrley .gt_super {
+  font-size: 65%;
+}
+
+#jrimljrley .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 65%;
+}
+</style>
+<table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <th colspan="4" class="gt_heading gt_title gt_font_normal" style="color: #000000; text-align: left; font-weight: bold;">Bryant's 2006 season is among the best scoring campaigns of all time</th>
+    </tr>
+    <tr>
+      <th colspan="4" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="color: #000000; text-align: left;">The Lakers' star is one of five players to average over 35 points per game and was the first to do so since Michael Jordan.</th>
+    </tr>
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">Player</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">Season</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">Points Per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;">All-Time Rank</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">Wilt Chamberlain</td>
+<td class="gt_row gt_left">1961-62</td>
+<td class="gt_row gt_right">50.36</td>
+<td class="gt_row gt_right">1</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">Wilt Chamberlain</td>
+<td class="gt_row gt_left gt_striped">1962-63</td>
+<td class="gt_row gt_right gt_striped">44.83</td>
+<td class="gt_row gt_right gt_striped">2</td></tr>
+    <tr><td class="gt_row gt_left">Wilt Chamberlain</td>
+<td class="gt_row gt_left">1960-61</td>
+<td class="gt_row gt_right">38.39</td>
+<td class="gt_row gt_right">3</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">Wilt Chamberlain</td>
+<td class="gt_row gt_left gt_striped">1959-60</td>
+<td class="gt_row gt_right gt_striped">37.60</td>
+<td class="gt_row gt_right gt_striped">4</td></tr>
+    <tr><td class="gt_row gt_left">Michael Jordan</td>
+<td class="gt_row gt_left">1986-87</td>
+<td class="gt_row gt_right">37.09</td>
+<td class="gt_row gt_right">5</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">Wilt Chamberlain</td>
+<td class="gt_row gt_left gt_striped">1963-64</td>
+<td class="gt_row gt_right gt_striped">36.85</td>
+<td class="gt_row gt_right gt_striped">6</td></tr>
+    <tr><td class="gt_row gt_left">James Harden</td>
+<td class="gt_row gt_left">2018-19</td>
+<td class="gt_row gt_right">36.13</td>
+<td class="gt_row gt_right">7</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">Rick Barry</td>
+<td class="gt_row gt_left gt_striped">1966-67</td>
+<td class="gt_row gt_right gt_striped">35.58</td>
+<td class="gt_row gt_right gt_striped">8</td></tr>
+    <tr><td class="gt_row gt_left" style="background-color: #552583; color: #FDB927;">Kobe Bryant</td>
+<td class="gt_row gt_left" style="background-color: #552583; color: #FDB927;">2005-06</td>
+<td class="gt_row gt_right" style="background-color: #552583; color: #FDB927;">35.40</td>
+<td class="gt_row gt_right" style="background-color: #552583; color: #FDB927;">9</td></tr>
+    <tr><td class="gt_row gt_left gt_striped">Michael Jordan</td>
+<td class="gt_row gt_left gt_striped">1987-88</td>
+<td class="gt_row gt_right gt_striped">34.98</td>
+<td class="gt_row gt_right gt_striped">10</td></tr>
+  </tbody>
+  <tfoot class="gt_sourcenotes">
+    <tr>
+      <td class="gt_sourcenote" colspan="4">Source: Sports-Reference | By: Porter Pearson</td>
+    </tr>
+  </tfoot>
+  
+</table>
+</div>
+<p>Bryant’s 2005-06 season ranks ninth all time, and third best in the NBA’s modern era. Not too bad. But there’s something about the way he did it that makes it even more impressive. Let’s take a look.</p>
+<p>First, we’ll need to create a couple dataframes that’ll be needed in our visual.</p>
+<pre class="r"><code>allpaceleagueaverages &lt;- leagueaverages %&gt;% filter(Pace&gt;0)
+notableyears &lt;- leagueaverages %&gt;% filter(Season == &quot;2005&quot; | Season == &quot;1986&quot; | Season == &quot;1987&quot; | Season == &quot;2018&quot;)</code></pre>
+<p>Now we’ll create a line chart.</p>
+<pre class="r"><code>ggplot() +
+  geom_line(data=allpaceleagueaverages, aes(x=as.numeric(Season), y=Pace)) +
+  geom_point(data=notableyears, aes(x=as.numeric(Season), y=Pace), color=&quot;blue&quot;) +
+  geom_text(size=3.25, aes(x=2012, y=90, label=&quot;2005-06 Bryant: 35.40 PPG&quot;)) +
+  geom_text(size=3.25, aes(x=1992.5, y=101.5, label=&quot;1986-87 Jordan: 37.09 PPG&quot;)) +
+  geom_text(size=3.25, aes(x=1981, y=98.75, label=&quot;1987-88 Jordan: 34.98 PPG&quot;)) +
+  geom_text(size=3.25, aes(x=2010.5, y=100, label=&quot;2018-2019 Harden: 36.13 PPG&quot;)) +
+  labs(
+    title = &quot;Bryant produced peak numbers despite playing in a slower league&quot;,
+    subtitle = &quot;The two other modern era top-10 scorers, Michael Jordan and James Harden, reached their top scoring seasons \nin years that averaged nearly 10 more possessions per game.&quot;,
+    x = &quot;&quot;,
+    y = &quot;Pace of Play (League Average)&quot;,
+    caption = &quot;Source: Sports-Reference | By: Porter Pearson&quot;
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = &quot;bold&quot;),
+    plot.subtitle = element_text(size = 10),
+    axis.title = element_text(size = 9),
+    panel.grid.minor = element_blank()
+  )</code></pre>
+<p><img src="http://porterpearson.github.io/2021/12/05/was-kobe-bryant-robbed-of-the-2005-06-mvp-award/index_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>The 2005-06 seasons was one of the slowest in NBA history in terms of pace of play, and the Lakers’ weren’t much faster. That season, the league averaged just 90.5 possessions per game. The Lakers were slightly above that average with a 90.9 pace of play. Adjusted to 100 possessions per game - close to the league averages of other modern era top-10 scorers - Bryant’s average rises to 45.6 points per game. Between his efficiency and volume, Bryant put up one of the greatest scoring seasons in NBA history.</p>
+<p>One more note on pace of play. Remember when I said I’d come back to why Bryant may not have had more opportunities? Now’s the time. While the league average pace of play was just over 90 possessions per game, the Suns lead the league with a 95.8 pace of play. So while Bryant was the lifeline of his team, Nash’s numbers were inflated relative to Bryant’s due the Suns significantly higher pace of play.</p>
+<p>So, did Bryant deserve the MVP?</p>
+<p>Well, if you’re looking at who had a better season, there’s a debate to be had. Looking at per game numbers and efficiency, Bryant seems to have an edge. But if you’re looking at who was more valuable to their team, there’s a clear answer. Whether it’s win shares, usage or any other measure, Bryant was more vital to his team.</p>
+<p>Seemingly the only argument left in favor of Nash is fact that the Suns had a better team.</p>
+<p>Yet, when playoffs rolled around, we had a chance to put that to the test. With a 54-28 record, the Suns secured the second seed in the Western Conference while the 45-37 Lakers earned the seventh seed. They met in the first round of the playoffs, where Los Angeles pushed Phoenix to seven games with Bryant leading the charge.</p>
+<p>So, I ask you, is a one-game advantage enough to push Nash over the top?</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+
